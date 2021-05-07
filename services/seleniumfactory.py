@@ -91,7 +91,7 @@ class SeleniumFactory:
             print(f"Exception as {e}")
             return False
 
-    def search_send_keys_by_class_name(self, tag_value=None, tag_search_text=None):
+    def search_and_send_keys_by_class_name(self, tag_value=None, tag_search_text=None):
         try:
             if tag_value is not None and tag_search_text is not None:
                 self.driver.find_element_by_name(tag_value).send_keys(tag_search_text)
@@ -135,6 +135,37 @@ class SeleniumFactory:
             logger.exception(f'{search_key} doesn\'t exist - {e}')
             return False
 
+    def search_element_by_name_or_id(self, main_tag='name', tag_value=None):
+        status = False
+        value = ''
+        try:
+            if main_tag == 'name':
+                if tag_value is not None:
+                    value = self.driver.find_element_by_name(tag_value)
+                    status = True
+                else:
+                    logger.error("Unable to search")
+                return status, value
+            elif main_tag == 'id':
+                if tag_value is not None:
+                    value = self.driver.find_element_by_id(tag_value)
+                    status = True
+                else:
+                    logger.error("Unable to search")
+                return status, value
+            else:
+                if tag_value is not None:
+                    options = ['M', 'F', 'O']
+                    for option in options:
+                        if self.driver.find_element_by_xpath(f".//input[@type='radio' and @value='{option}']").is_selected():
+                            value = option
+                            break
+                    status = True
+                else:
+                    logger.error("Unable to search")
+                return status, value
+        except Exception as e:
+            logger.exception(f"Exception while fetching values {e}")
 
 # ob = SeleniumFactory()
 # ob.connect()

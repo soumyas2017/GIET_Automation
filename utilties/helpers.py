@@ -1,12 +1,16 @@
 import random
 import sys
 import logging
+import os
+import json
 from getindianname import male, female
 from ast import literal_eval
-from utilties.config import win_cred_file, linux_cred_file, email_issuers
+from utilties.config import win_cred_file, linux_cred_file, email_issuers, mock_data_file
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 logger = logging.getLogger(__name__)
+DATA_DD = dict()
 
 
 def date_item():
@@ -46,32 +50,38 @@ def generate_random_strings(length):
     return text
 
 
-def get_attribute_and_value(item, name=None):
-    key = ''.join(list(item.keys()))
-    # key = item.keys()
-    if isinstance(item[key], list) and len(item[key]) > 0:
-        attribute_tag, attribute_name = list(''.join(key).split('-'))
-        if attribute_name == 'sex':
-            if str(name.split(" ")[1]).endswith(('a', 'i')):
-                attribute_value = item[key][1]
+def get_attribute_and_value(item, name=None, actiontype='default'):
+    if actiontype == 'default':
+        key = ''.join(list(item.keys()))
+        # key = item.keys()
+        if isinstance(item[key], list) and len(item[key]) > 0:
+            attribute_tag, attribute_name = list(''.join(key).split('-'))
+            if attribute_name == 'sex':
+                if str(name.split(" ")[1]).endswith(('a', 'i')):
+                    attribute_value = item[key][1]
+                else:
+                    attribute_value = item[key][0]
             else:
-                attribute_value = item[key][0]
+                attribute_value = random.choice(item[key])
+            return attribute_tag, attribute_name, str(attribute_value)
         else:
-            attribute_value = random.choice(item[key])
-        return attribute_tag, attribute_name, str(attribute_value)
+            attribute_tag, attribute_name = list(''.join(key).split('-'))
+            if item[key] not in ['dynamic', 'radio', 'date', 'male_string', 'female_string', 'submit']:
+                length, typeofval = str(item[key]).split('_')
+                atrribute_value = generate_random_strings(length) if typeofval == 'string' else \
+                    generate_random_numbers(length)
+            elif item[key] in ['male_string']:
+                atrribute_value = male()
+            elif item[key] in ['female_string']:
+                atrribute_value = female()
+            else:
+                atrribute_value = ''
+            update_dd(attribute_name, str(atrribute_value))
+            return attribute_tag, attribute_name, str(atrribute_value)
     else:
+        key = ''.join(list(item.keys()))
         attribute_tag, attribute_name = list(''.join(key).split('-'))
-        if item[key] not in ['dynamic', 'radio', 'date', 'male_string', 'female_string', 'submit']:
-            length, typeofval = str(item[key]).split('_')
-            atrribute_value = generate_random_strings(length) if typeofval == 'string' else \
-                generate_random_numbers(length)
-        elif item[key] in ['male_string']:
-            atrribute_value = male()
-        elif item[key] in ['female_string']:
-            atrribute_value = female()
-        else:
-            atrribute_value = ''
-        return attribute_tag, attribute_name, str(atrribute_value)
+        return attribute_tag, attribute_name
 
 
 def get_creds():
@@ -116,4 +126,21 @@ def apply_link(streams):
     only_apply_url = item.split('admission/')[1]
     return only_apply_url
 
+
+def update_dd(key, value):
+    DATA_DD[key] = value
+    logger.info(DATA_DD)
+
+
+def write_mock_data(data_dictionary=None):
+    try:
+        if not os.path.exists(mock_data_file):
+            with open(mock_data_file, 'w') as writer:
+                writer.writelines(json.dumps(data_dictionary, indent=4))
+                logger.info("Successfully wrote the data dictionary file")
+        else:
+            with open(mock_data_file, 'a') as writer:
+                writer.writelines(json.dumps(data_dictionary, indent=4))
+    except OSError as e:
+        logger.exception(f"Error while writing data dictionary {e}")
 
