@@ -32,5 +32,7 @@ CLASS_X_INSTITUTE = {'name-madhyamik_institute': ['HIGH SCHOOL', 'SCHOOL', 'SISH
 CLASS_X_PASSING_YEAR = {'name-madhyamik_yop': '4_number'}
 CLASS_X_GRADE_PERCENTAGE = {'name-madhyamik_percentage': '2_number'}
 SUBMIT = {'name-submit': 'submit'}
-
+JEE_APPEARED = '/html/body/div[1]/div/div[2]/div[2]/form/div[2]/fieldset/table[9]/tbody/tr[2]/td[2]/input[2]'
+STATE_ENTRANCE_APPEARED = '/html/body/div[1]/div/div[2]/div[2]/form/div[2]/fieldset/table[9]/tbody/tr[3]/td[2]/input[2]'
+BTECH_APPEARED = '/html/body/div[1]/div/div[2]/div[2]/form/div[2]/fieldset/table[9]/tbody/tr[4]/td[2]/input[2]'
 

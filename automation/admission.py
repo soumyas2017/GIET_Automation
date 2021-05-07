@@ -29,14 +29,6 @@ logger = logging.getLogger(__name__)
 class Admission:
     def __init__(self):
         self.ob = SeleniumFactory()
-        # self.mockup_objects = {GENDER: 'S', BLOOD_GROUP: 'S', RELIGION: 'S', FATHERS_NAME: 'T', DATE_OF_BIRTH: 'C',
-        #                        FATHERS_EMAIL: 'T', MOTHERS_NAME: 'T', MOTHERS_EMAIL: 'T', FATHERS_OCCUPATION: 'T',
-        #                        MOTHERS_OCCUPATION: 'T', FATHERS_PHONE_NUMBER: 'T', MOTHERS_PHONE_NUMBER: 'T',
-        #                        EMERGENCY_PHONE: 'T', AADHAR_NO: 'T', CORRESPONDENCE_ADDRESS: 'T', TOWN_VILLAGE: 'T',
-        #                        RESIDENTIAL_AREA: 'S', PO: 'T', PINCODE: 'T', COUNTRY: 'S', DISTRICT: 'T', CITY: 'S',
-        #                        STATE: 'S', SAME_ADDRESS: 'S', CLASS_X_BOARD: 'T', CLASS_X_INSTITUTE: 'S',
-        #                        CLASS_X_PASSING_YEAR: 'T', CLASS_X_GRADE_PERCENTAGE: 'T'}
-        self.all_users = list()
         self.name = ''
         self.paname = ''
         self.email = ''
@@ -47,8 +39,9 @@ class Admission:
         self.state = list()
         self.city = list()
         self.po = list()
+        self.district = list()
         self.datadictionary = dict()
-        self.actionables = {'C': 'clickable', 'T': 'typeable', 'S': 'selectable'}
+        self.actionables = {'C': 'clickable', 'T': 'typeable', 'S': 'selectable', 'D': 'directable'}
 
     def get_all_streams(self):
         status, elems = self.ob.search_element_by_css('a.head.item')
@@ -88,13 +81,14 @@ class Admission:
         time.sleep(2)
         if action_type == 'selectable':
             tag_name, tag_value, tag_search = get_attribute_and_value(item=item,)
-            if tag_value in ['correspondence_state_id', 'correspondence_city_id']:
+            if tag_value in ['correspondence_state_id', 'correspondence_city_id',]:
                 status, items = self.ob.search_and_return_items_by_xpath(tag_name=tag_name, tag_value=tag_value,
                                                                   tag_search_text=tag_search)
                 if status:
                     item = random.choice(items)
                     if self.ob.search_and_click_by_xpath(tag_name=tag_name, tag_value=tag_value,
                                                       tag_search_text=item):
+                        self.city = item if tag_value == 'correspondence_city_id' else ''
                         return True
                     else:
                         logger.error(f"Unable to select {item}")
@@ -103,27 +97,35 @@ class Admission:
 
                 status = self.ob.search_and_click_by_xpath(tag_name=tag_name, tag_value=tag_value, tag_search_text=tag_search)
 
-            elif tag_value in ['blood_group', 'religion_id', 'nationality']:
+            elif tag_value in ['blood_group', 'religion_id', 'nationality', 'correspondence_country_id']:
                 status = self.ob.search_and_click_by_xpath(tag_name=tag_name, tag_value=tag_value, tag_search_text=tag_search)
         elif action_type == 'clickable':
             tag, tag_value, tag_text = get_attribute_and_value(item=item,  name=self.name)
             if tag_value == 'date_of_birth':
-                self.ob.click_by_id(tag_text).click()
                 time.sleep(2)
-                yob = random.choice([year for year in range(1995, 2005)])
-                month = random.choice(['Jan', 'Feb', 'Mar', 'Apr', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-                if self.ob.search_and_click_by_xpath(main_tag='class', tag_name='ui-datepicker-year', tag_value=yob):
-                    if self.ob.search_and_click_by_xpath(main_tag='class', tag_name='ui-datepicker-month', tag_value=month):
-                        if self.ob.search_and_click_by_xpath(static_tag=date_item()):
-                            status = True
+                if self.ob.click_by_id(tag_value):
+                    yob = random.choice([year for year in range(1995, 2005)])
+                    month = random.choice(['Jan', 'Feb', 'Mar', 'Apr', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+                    time.sleep(2)
+                    if self.ob.search_and_click_by_xpath(tag_name='class', tag_value='ui-datepicker-year', tag_search_text=yob):
+                        time.sleep(2)
+                        if self.ob.search_and_click_by_xpath(tag_name='class', tag_value='ui-datepicker-month', tag_search_text=month):
+                            time.sleep(2)
+                            if self.ob.search_and_click_by_xpath(static_tag=date_item()):
+                                time.sleep(2)
+                                status = True
+                            else:
+                                logger.error('Unable to click on day picker')
                         else:
-                            logger.error('Unable to click on day picker')
+                            logger.error('Unable to click on month picker')
                     else:
-                        logger.error('Unable to click on month picker')
+                        logger.error('Unable to click on year picker')
                 else:
-                    logger.error('Unable to click on year picker')
+                    logger.error('Unable to find DOB object')
             elif tag_value == 'sex':
                 status = self.ob.search_and_click_by_xpath(main_tag='input', tag_name='value', tag_value=tag_text)
+            elif tag_value == 'same_address':
+                status = self.ob.click_by_id(tag_value=tag_value)
             return status
         elif action_type == 'typeable':
             tag, tag_value, tag_text = get_attribute_and_value(item=item)
@@ -133,19 +135,48 @@ class Admission:
             elif tag_value in ['father_email', 'mother_email']:
                 tag_text = '{}{}@{}.{}'.format(self.paname.replace(' ', '').lower(), generate_email_identifier(),
                                                random.choice(email_issuers), 'com')
-
+            elif tag_value in ['correspondence_town', 'correspondence_po', 'correspondence_district']:
+                tag_text = self.city
             status = self.ob.search_and_send_keys_by_name(tag_value=tag_value, tag_search_text=tag_text)
+        elif action_type == 'directable':
+            status = self.ob.search_and_click_by_xpath(static_tag=item)
         return status
 
     def get_mock_data(self):
         # logger.info(self.do_mockup(item=GENDER, action_type=self.actionables['C']))
         # logger.info(self.do_mockup(item=BLOOD_GROUP, action_type=self.actionables['S']))
         # logger.info(self.do_mockup(item=RELIGION, action_type=self.actionables['S']))
-        logger.info(self.do_mockup(item=NATIONALITY, action_type=self.actionables['S']))
+        # logger.info(self.do_mockup(item=NATIONALITY, action_type=self.actionables['S']))
         # logger.info(self.do_mockup(item=FATHERS_NAME, action_type=self.actionables['T']))
         # logger.info(self.do_mockup(item=FATHERS_EMAIL, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=FATHERS_EMAIL, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=FATHERS_PHONE_NUMBER, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=FATHERS_OCCUPATION, action_type=self.actionables['T']))
         # logger.info(self.do_mockup(item=MOTHERS_NAME, action_type=self.actionables['T']))
         # logger.info(self.do_mockup(item=MOTHERS_EMAIL, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=MOTHERS_PHONE_NUMBER, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=MOTHERS_OCCUPATION, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=EMERGENCY_PHONE, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=AADHAR_NO, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=DATE_OF_BIRTH, action_type=self.actionables['C']))
+        # logger.info(self.do_mockup(item=COUNTRY, action_type=self.actionables['S']))
+        # time.sleep(2)
+        # logger.info(self.do_mockup(item=STATE, action_type=self.actionables['S']))
+        # time.sleep(2)
+        # logger.info(self.do_mockup(item=CITY, action_type=self.actionables['S']))
+        # logger.info(self.do_mockup(item=DISTRICT, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=PO, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=TOWN_VILLAGE, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=CORRESPONDENCE_ADDRESS, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=SAME_ADDRESS, action_type=self.actionables['C']))
+        # logger.info(self.do_mockup(item=CLASS_X_BOARD, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=CLASS_X_INSTITUTE, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=CLASS_X_PASSING_YEAR, action_type=self.actionables['T']))
+        # logger.info(self.do_mockup(item=CLASS_X_GRADE_PERCENTAGE, action_type=self.actionables['T']))
+        if '&id=3&' in self.apply_link:
+            logger.info(self.do_mockup(item=JEE_APPEARED, action_type=self.actionables['D']))
+            logger.info(self.do_mockup(item=STATE_ENTRANCE_APPEARED, action_type=self.actionables['D']))
+            logger.info(self.do_mockup(item=BTECH_APPEARED, action_type=self.actionables['D']))
 
     def do_activity(self):
         self.login()

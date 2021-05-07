@@ -72,7 +72,7 @@ class SeleniumFactory:
     def search_and_return_items_by_xpath(self, main_tag='select', tag_name='name', tag_value=None, tag_search_text=None):
         try:
             items = self.driver.find_element_by_xpath(
-                f"//{main_tag}[@{tag_name}='{tag_value}']/option[text()='{tag_search_text}']").text.split('\n')
+                f"//{main_tag}[@{tag_name}='{tag_value}']").text.split('\n')
             scrubbed_items = remove_junks(items)
             return True, scrubbed_items
         except Exception as e:
