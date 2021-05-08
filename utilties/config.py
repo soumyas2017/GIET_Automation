@@ -12,3 +12,4 @@ post_login_req_wait = 10
 email_issuers = ['gmail', 'yahoomail', 'outlook', 'rediffmail']
 login_successful_div_element = 'left-panel'
 login_failure_div_element = 'red-left'
+login_failure_msg = 'Invalid Email or Password!'

@@ -1,6 +1,8 @@
+import sys
 import time
 from utilties.constants import *
 from utilties.helpers import *
+from utilties.config import login_failure_div_element, login_failure_msg
 from services.seleniumfactory import SeleniumFactory
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 logger = logging.getLogger(__name__)
@@ -34,6 +36,7 @@ class Admission:
         self.ob.search_and_click_by_xpath(main_tag='a', tag_name='href', tag_value=self.apply_link)
 
     def login(self):
+        login_status = True
         gen = get_creds()
         try:
             self.name, self.email, self.password = list(next(gen))
@@ -41,12 +44,17 @@ class Admission:
                 if self.ob.search_and_send_keys_by_name(tag_value='email', tag_search_text=self.email):
                     if self.ob.search_and_send_keys_by_name(tag_value='password', tag_search_text=self.password):
                         if self.ob.click_by_class_name(tag_value='submit'):
-                            logger.info('Success Login')
-                            self.datadictionary['email'] = self.email
-                            self.datadictionary['name'] = self.name
-                            self.datadictionary['pass'] = self.password
-                            self.apply_link = apply_link(self.get_all_streams())
-                            self.datadictionary['apply_url'] = self.apply_link
+                            if self.ob.search_by_class_name(f"{login_failure_div_element}") != login_failure_msg:
+                                logger.info('Success Login')
+                                self.datadictionary['email'] = self.email
+                                self.datadictionary['name'] = self.name
+                                self.datadictionary['pass'] = self.password
+                                self.apply_link = apply_link(self.get_all_streams())
+                                self.datadictionary['apply_url'] = self.apply_link
+                            else:
+                                logger.error(f"Invalid Username or Password")
+                                login_status = False
+                                return login_status
                         else:
                             logger.error('Unable to locate the submit button')
                     else:
@@ -186,12 +194,12 @@ class Admission:
         self.ob.disconnect()
 
     def do_activity(self):
-        self.login()
-        self.click_apply()
-        self.get_mock_data()
-        self.verify_and_store_data()
-        self.submit_form()
-        self.store_data_in_file()
+        if self.login():
+            self.click_apply()
+            self.get_mock_data()
+            self.verify_and_store_data()
+            self.submit_form()
+            self.store_data_in_file()
         self.close_browser()
 
 

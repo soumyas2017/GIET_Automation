@@ -178,6 +178,13 @@ class SeleniumFactory:
         except Exception as e:
             logger.exception(f"Exception while fetching values {e}")
 
+    def search_by_class_name(self, search_key):
+        try:
+            status = self.driver.find_element_by_class_name(search_key).text
+            return status
+        except Exception as e:
+            logger.exception(f'{search_key} doesn\'t exist - {e}')
+            return False
 # ob = SeleniumFactory()
 # ob.connect()
 # ob.disconnect()
