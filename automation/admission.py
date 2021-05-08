@@ -51,6 +51,7 @@ class Admission:
                                 self.datadictionary['pass'] = self.password
                                 self.apply_link = apply_link(self.get_all_streams())
                                 self.datadictionary['apply_url'] = self.apply_link
+                                return login_status
                             else:
                                 logger.error(f"Invalid Username or Password")
                                 login_status = False

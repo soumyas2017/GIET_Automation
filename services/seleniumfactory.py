@@ -12,7 +12,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 import sys
 import logging
@@ -179,12 +179,17 @@ class SeleniumFactory:
             logger.exception(f"Exception while fetching values {e}")
 
     def search_by_class_name(self, search_key):
+        status = ''
         try:
-            status = self.driver.find_element_by_class_name(search_key).text
-            return status
-        except Exception as e:
+            if self.driver.find_element_by_class_name(search_key):
+                status = self.driver.find_element_by_class_name(search_key).text
+            else:
+                status = 'login'
+        except NoSuchElementException as e:
+            status = 'login'
             logger.exception(f'{search_key} doesn\'t exist - {e}')
-            return False
+        finally:
+            return status
 # ob = SeleniumFactory()
 # ob.connect()
 # ob.disconnect()
