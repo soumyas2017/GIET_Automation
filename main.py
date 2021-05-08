@@ -1,16 +1,21 @@
-# This is a sample Python script.
+from automation.admission import Admission
+from utilties.config import breaker_file, log_file_path
+import os
+import logging
+import logging.config
+logging.FileHandler(log_file_path, mode='a', encoding=None, delay=False,)
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger('main')
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def do_activity():
+    logger.info('Start Activity')
+    ob = Admission()
+    ob.Main()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+while True:
+    if not os.path.exists(breaker_file):
+        do_activity()
+    else:
+        logger.info("Break file detected.. Quitting..")
+        break

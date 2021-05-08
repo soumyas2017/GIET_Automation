@@ -1,11 +1,14 @@
+import logging.config
 import sys
 import time
 from utilties.constants import *
 from utilties.helpers import *
-from utilties.config import login_failure_div_element, login_failure_msg
+from utilties.config import login_failure_div_element, login_failure_msg, log_file_path, apply_failure, apply_success, login_url
 from services.seleniumfactory import SeleniumFactory
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
-logger = logging.getLogger(__name__)
+
+logging.FileHandler(log_file_path, mode='a', encoding=None, delay=False,)
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger('admission')
 
 
 class Admission:
@@ -24,6 +27,7 @@ class Admission:
         self.district = list()
         self.datadictionary = dict()
         self.actionables = {'C': 'clickable', 'T': 'typeable', 'S': 'selectable', 'D': 'directable'}
+        self.filedata = list()
 
     def get_all_streams(self):
         status, elems = self.ob.search_element_by_css('a.head.item')
@@ -37,21 +41,27 @@ class Admission:
 
     def login(self):
         login_status = True
-        gen = get_creds()
+        gen = get_creds(self.filedata)
         try:
             self.name, self.email, self.password = list(next(gen))
             if self.ob.connect():
                 if self.ob.search_and_send_keys_by_name(tag_value='email', tag_search_text=self.email):
                     if self.ob.search_and_send_keys_by_name(tag_value='password', tag_search_text=self.password):
                         if self.ob.click_by_class_name(tag_value='submit'):
-                            if self.ob.search_by_class_name(f"{login_failure_div_element}") != login_failure_msg:
-                                logger.info('Success Login')
-                                self.datadictionary['email'] = self.email
-                                self.datadictionary['name'] = self.name
-                                self.datadictionary['pass'] = self.password
-                                self.apply_link = apply_link(self.get_all_streams())
-                                self.datadictionary['apply_url'] = self.apply_link
-                                return login_status
+                            try:
+                                # if self.ob.search_by_class_name(f"{login_failure_div_element}") != login_failure_msg:
+                                logger.info(f"{self.ob.current_url_link()} != {login_url}")
+                                if self.ob.current_url_link() != login_url:
+                                    logger.info('Success Login')
+                                    self.datadictionary['email'] = self.email
+                                    self.datadictionary['name'] = self.name
+                                    self.datadictionary['pass'] = self.password
+                                    self.apply_link = apply_link(self.get_all_streams())
+                                    self.datadictionary['apply_url'] = self.apply_link
+                                    return login_status
+                            except Exception as e:
+                                logger.exception(f"Not Found. Skip - {e}")
+
                             else:
                                 logger.error(f"Invalid Username or Password")
                                 login_status = False
@@ -163,6 +173,10 @@ class Admission:
         logger.info(self.do_mockup(item=CLASS_X_INSTITUTE, action_type=self.actionables['T']))
         logger.info(self.do_mockup(item=CLASS_X_PASSING_YEAR, action_type=self.actionables['T']))
         logger.info(self.do_mockup(item=CLASS_X_GRADE_PERCENTAGE, action_type=self.actionables['T']))
+        if '&id=3&' in self.apply_link:
+            logger.info(self.do_mockup(item=JEE_APPEARED, action_type=self.actionables['D']))
+            logger.info(self.do_mockup(item=STATE_ENTRANCE_APPEARED, action_type=self.actionables['D']))
+            logger.info(self.do_mockup(item=BTECH_APPEARED, action_type=self.actionables['D']))
 
     def verify_and_store_data(self):
         dd = get_attribute_and_value(items=[GENDER, BLOOD_GROUP, RELIGION, NATIONALITY, CATEGORY_OF_APPLICATION,
@@ -191,26 +205,76 @@ class Admission:
     def store_data_in_file(self):
         logger.info(write_mock_data(self.datadictionary))
 
+    def read_and_write_records(self, flag='default', mode='read', content=None):
+        if flag == 'default':
+            if mode == 'read':
+                try:
+                    e = list()
+                    with open(win_cred_file, "r+") as f:
+                        data = f.readlines()
+                        for i in data:
+                            d = literal_eval(str(i))
+                            e.append(d)
+                    self.filedata = e
+                    # logger.info(e)
+                except Exception as e:
+                    logger.exception(f"Exception in operating files - {e}")
+                    return False
+            else:
+                try:
+                    with open(win_cred_file, "w+") as writer:
+                        data = self.filedata
+                        for i in data:
+                            writer.write(str(i) + '\n')
+                except Exception as e:
+                    logger.exception(f"Exception in operating files - {e}")
+                    return False
+        elif flag == 'True':
+            try:
+                if not os.path.exists(apply_success):
+                    with open(apply_success, "w") as writer:
+                        writer.write(str(content) + '\n')
+                else:
+                    logger.info(f"Write success content - {content}")
+                    with open(apply_success, "a") as writer:
+                        writer.write(str(content) + '\n')
+            except Exception as e:
+                logger.exception(f"Exception in operating files - {e}")
+                return False
+
+        elif flag == 'False':
+            try:
+                if not os.path.exists(apply_failure):
+                    with open(apply_failure, "w") as writer:
+                        writer.write(str(content) + '\n')
+                else:
+                    logger.info(f"Write failure content - {content}")
+                    with open(apply_failure, "a") as writer:
+                        writer.write(str(content) + '\n')
+            except Exception as e:
+                logger.exception(f"Exception in operating files - {e}")
+                return False
+
     def close_browser(self):
         self.ob.disconnect()
 
-    def do_activity(self):
+    def Main(self):
+        self.read_and_write_records()
         if self.login():
             self.click_apply()
             self.get_mock_data()
             self.verify_and_store_data()
             self.submit_form()
             self.store_data_in_file()
+            self.read_and_write_records(flag='True', mode='write', content=self.filedata[0])
+        else:
+            self.read_and_write_records(flag='False', mode='write', content=self.filedata[0])
         self.close_browser()
+        del self.filedata[0]
+        self.read_and_write_records(mode='write')
 
 
-
-
-
-
-obj = Admission()
-obj.do_activity()
-
-
+# ob = Admission()
+# ob.Main()
 
 

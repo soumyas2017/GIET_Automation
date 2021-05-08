@@ -16,9 +16,10 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 import sys
 import logging
+import logging.config
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
-logger = logging.getLogger(__name__)
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger('seleniumfactory')
 
 
 class SeleniumFactory:
@@ -185,11 +186,18 @@ class SeleniumFactory:
                 status = self.driver.find_element_by_class_name(search_key).text
             else:
                 status = 'login'
-        except NoSuchElementException as e:
+            return status
+        except Exception as e:
             status = 'login'
             logger.exception(f'{search_key} doesn\'t exist - {e}')
-        finally:
             return status
+
+    def current_url_link(self):
+        try:
+            return self.driver.current_url
+        except Exception as e:
+            logger.exception(f"Unable to get..- {e}")
+            return False
 # ob = SeleniumFactory()
 # ob.connect()
 # ob.disconnect()

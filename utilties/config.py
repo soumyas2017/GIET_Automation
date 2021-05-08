@@ -13,3 +13,7 @@ email_issuers = ['gmail', 'yahoomail', 'outlook', 'rediffmail']
 login_successful_div_element = 'left-panel'
 login_failure_div_element = 'red-left'
 login_failure_msg = 'Invalid Email or Password!'
+log_file_path = 'D:\\automator.log'
+breaker_file = 'D:\\break.txt'
+apply_success = 'D:\\success.txt'
+apply_failure = 'D:\\failure.txt'

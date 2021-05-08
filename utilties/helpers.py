@@ -1,15 +1,17 @@
 import random
 import sys
 import logging
+import logging.config
 import os
 import json
 from getindianname import male, female
 from ast import literal_eval
-from utilties.config import win_cred_file, linux_cred_file, email_issuers, mock_data_file
+from utilties.config import win_cred_file, linux_cred_file, email_issuers, mock_data_file, log_file_path
 
+logging.FileHandler(log_file_path, mode='a', encoding=None, delay=False,)
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger('helpers')
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
-logger = logging.getLogger(__name__)
 DATA_DD = dict()
 
 
@@ -86,16 +88,23 @@ def get_attribute_and_value(item=None, items=None, name=None, actiontype='defaul
         return test_dd
 
 
-def get_creds():
+def get_creds(filedata=None):
     try:
-        datafile = win_cred_file if sys.platform == 'win32' else linux_cred_file
-        for line in open(datafile, 'r'):
-            if line != '\n':
-                data_dict = literal_eval(line)
-                name = data_dict['name']
-                email = data_dict['email']
-                password = data_dict['password']
-                yield name, email, password
+        # datafile = win_cred_file if sys.platform == 'win32' else linux_cred_file
+        # for line in open(datafile, 'r'):
+        #     if line != '\n':
+        #         data_dict = literal_eval(line)
+        #         name = data_dict['name']
+        #         email = data_dict['email']
+        #         password = data_dict['password']
+        #         yield name, email, password
+        datafile = filedata
+        for line in datafile:
+            name = line['name']
+            email = line['email']
+            password = line['password']
+            logger.info(f"{name} = {email}")
+            yield name, email, password
     except OSError as e:
         logger.critical(f"No file exits error desc - {e}")
 
