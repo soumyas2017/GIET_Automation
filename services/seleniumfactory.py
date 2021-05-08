@@ -34,7 +34,6 @@ class SeleniumFactory:
             self.driver.get(self.url)
             WebDriverWait(self.driver, login_page_load_wait_duration).until(EC.presence_of_element_located(
                 (By.CLASS_NAME, login_successful_div_element)))
-            self.driver.minimize_window()
         except TimeoutException:
             logger.exception("Unable to connect")
             sys.exit()
