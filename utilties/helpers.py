@@ -50,14 +50,14 @@ def generate_random_strings(length):
     return text
 
 
-def get_attribute_and_value(item, name=None, actiontype='default'):
+def get_attribute_and_value(item=None, items=None, name=None, actiontype='default'):
     if actiontype == 'default':
         key = ''.join(list(item.keys()))
         # key = item.keys()
         if isinstance(item[key], list) and len(item[key]) > 0:
             attribute_tag, attribute_name = list(''.join(key).split('-'))
             if attribute_name == 'sex':
-                if str(name.split(" ")[1]).endswith(('a', 'i')):
+                if str(name.split(" ")[0]).endswith(('a', 'i')):
                     attribute_value = item[key][1]
                 else:
                     attribute_value = item[key][0]
@@ -76,12 +76,14 @@ def get_attribute_and_value(item, name=None, actiontype='default'):
                 atrribute_value = female()
             else:
                 atrribute_value = ''
-            update_dd(attribute_name, str(atrribute_value))
             return attribute_tag, attribute_name, str(atrribute_value)
     else:
-        key = ''.join(list(item.keys()))
-        attribute_tag, attribute_name = list(''.join(key).split('-'))
-        return attribute_tag, attribute_name
+        test_dd = list()
+        for item in items:
+            key = ''.join(list(item.keys()))
+            attribute_tag, attribute_name = list(''.join(key).split('-'))
+            test_dd.append(attribute_name)
+        return test_dd
 
 
 def get_creds():
@@ -127,9 +129,9 @@ def apply_link(streams):
     return only_apply_url
 
 
-def update_dd(key, value):
-    DATA_DD[key] = value
-    logger.info(DATA_DD)
+def update_dd(dd=None, key=None, value=None):
+    dd.update({key: value})
+    return dd
 
 
 def write_mock_data(data_dictionary=None):
@@ -137,10 +139,9 @@ def write_mock_data(data_dictionary=None):
         if not os.path.exists(mock_data_file):
             with open(mock_data_file, 'w') as writer:
                 writer.writelines(json.dumps(data_dictionary, indent=4))
-                logger.info("Successfully wrote the data dictionary file")
         else:
             with open(mock_data_file, 'a') as writer:
                 writer.writelines(json.dumps(data_dictionary, indent=4))
+        return "Successfully wrote the data dictionary file"
     except OSError as e:
         logger.exception(f"Error while writing data dictionary {e}")
-

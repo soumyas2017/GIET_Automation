@@ -1,11 +1,3 @@
-# Login  - D
-# look for branch D
-# Click to apply D
-# generate fakes WIP
-# Fill up the details
-# Submit
-# Get the application ID
-# Close the browser
 import time
 from utilties.constants import *
 from utilties.helpers import *
@@ -112,7 +104,7 @@ class Admission:
                     logger.error('Unable to find DOB object')
             elif tag_value == 'sex':
                 status = self.ob.search_and_click_by_xpath(main_tag='input', tag_name='value', tag_value=tag_text)
-            elif tag_value == 'same_address':
+            elif tag_value in ['same_address', 'submit']:
                 status = self.ob.click_by_id(tag_value=tag_value)
             return status
         elif action_type == 'typeable':
@@ -133,51 +125,74 @@ class Admission:
     def get_mock_data(self):
         logger.info(self.do_mockup(item=GENDER, action_type=self.actionables['C']))
         logger.info(self.do_mockup(item=BLOOD_GROUP, action_type=self.actionables['S']))
-        # logger.info(self.do_mockup(item=RELIGION, action_type=self.actionables['S']))
-        # logger.info(self.do_mockup(item=NATIONALITY, action_type=self.actionables['S']))
-        # logger.info(self.do_mockup(item=CATEGORY_OF_APPLICATION, action_type=self.actionables['S']))
-        # logger.info(self.do_mockup(item=FATHERS_NAME, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=FATHERS_EMAIL, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=FATHERS_PHONE_NUMBER, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=FATHERS_OCCUPATION, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=MOTHERS_NAME, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=MOTHERS_EMAIL, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=MOTHERS_PHONE_NUMBER, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=MOTHERS_OCCUPATION, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=EMERGENCY_PHONE, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=AADHAR_NO, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=PINCODE, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=DATE_OF_BIRTH, action_type=self.actionables['C']))
-        # logger.info(self.do_mockup(item=COUNTRY, action_type=self.actionables['S']))
-        # time.sleep(2)
-        # logger.info(self.do_mockup(item=STATE, action_type=self.actionables['S']))
-        # time.sleep(2)
-        # logger.info(self.do_mockup(item=CITY, action_type=self.actionables['S']))
-        # logger.info(self.do_mockup(item=DISTRICT, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=PO, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=TOWN_VILLAGE, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=CORRESPONDENCE_ADDRESS, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=SAME_ADDRESS, action_type=self.actionables['C']))
-        # logger.info(self.do_mockup(item=CLASS_X_BOARD, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=CLASS_X_INSTITUTE, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=CLASS_X_PASSING_YEAR, action_type=self.actionables['T']))
-        # logger.info(self.do_mockup(item=CLASS_X_GRADE_PERCENTAGE, action_type=self.actionables['T']))
-        # if '&id=3&' in self.apply_link:
-        #     logger.info(self.do_mockup(item=JEE_APPEARED, action_type=self.actionables['D']))
-        #     logger.info(self.do_mockup(item=STATE_ENTRANCE_APPEARED, action_type=self.actionables['D']))
-        #     logger.info(self.do_mockup(item=BTECH_APPEARED, action_type=self.actionables['D']))
+        logger.info(self.do_mockup(item=RELIGION, action_type=self.actionables['S']))
+        logger.info(self.do_mockup(item=NATIONALITY, action_type=self.actionables['S']))
+        logger.info(self.do_mockup(item=CATEGORY_OF_APPLICATION, action_type=self.actionables['S']))
+        logger.info(self.do_mockup(item=FATHERS_NAME, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=FATHERS_EMAIL, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=FATHERS_PHONE_NUMBER, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=FATHERS_OCCUPATION, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=MOTHERS_NAME, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=MOTHERS_EMAIL, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=MOTHERS_PHONE_NUMBER, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=MOTHERS_OCCUPATION, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=EMERGENCY_PHONE, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=AADHAR_NO, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=PINCODE, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=DATE_OF_BIRTH, action_type=self.actionables['C']))
+        logger.info(self.do_mockup(item=COUNTRY, action_type=self.actionables['S']))
+        time.sleep(2)
+        logger.info(self.do_mockup(item=STATE, action_type=self.actionables['S']))
+        time.sleep(2)
+        logger.info(self.do_mockup(item=CITY, action_type=self.actionables['S']))
+        logger.info(self.do_mockup(item=DISTRICT, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=PO, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=TOWN_VILLAGE, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=CORRESPONDENCE_ADDRESS, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=SAME_ADDRESS, action_type=self.actionables['C']))
+        logger.info(self.do_mockup(item=CLASS_X_BOARD, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=CLASS_X_INSTITUTE, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=CLASS_X_PASSING_YEAR, action_type=self.actionables['T']))
+        logger.info(self.do_mockup(item=CLASS_X_GRADE_PERCENTAGE, action_type=self.actionables['T']))
 
     def verify_and_store_data(self):
-        tag, name = get_attribute_and_value(item=BLOOD_GROUP, actiontype='verify', )
-        status, value = self.ob.search_element_by_name_or_id(main_tag='xpath' if name == 'sex' else 'name', tag_value=name)
-        if status:
-            logger.info(f"{name} - {value}")
+        dd = get_attribute_and_value(items=[GENDER, BLOOD_GROUP, RELIGION, NATIONALITY, CATEGORY_OF_APPLICATION,
+                                            FATHERS_PHONE_NUMBER, FATHERS_OCCUPATION, FATHERS_NAME, FATHERS_EMAIL,
+                                            MOTHERS_NAME, MOTHERS_EMAIL, MOTHERS_PHONE_NUMBER, MOTHERS_OCCUPATION,
+                                            EMERGENCY_PHONE, AADHAR_NO, PINCODE, DATE_OF_BIRTH, COUNTRY, STATE, CITY,
+                                            DISTRICT, PO, TOWN_VILLAGE, CORRESPONDENCE_ADDRESS, CLASS_X_BOARD,
+                                            CLASS_X_INSTITUTE, CLASS_X_PASSING_YEAR, CLASS_X_GRADE_PERCENTAGE],
+                                            actiontype='verify', )
+        for value in dd:
+            name = value
+            status, text = self.ob.search_element_by_name_or_id(main_tag='xpath' if name == 'sex' else 'name',
+                                                                 tag_value=name)
+            if status:
+                self.datadictionary.update({name: text})
+        logger.info(self.datadictionary)
+
+    def submit_form(self):
+        logger.info(self.do_mockup(item=SUBMIT, action_type=self.actionables['C']))
+        logger.info(self.ob.search_and_click_by_xpath(static_tag='/html/body/div[1]/div[1]/table/tbody/tr/td/input'))
+        items = self.ob.find_text_by_xpath(static_tag='/html/body/div[1]/div[3]/div[2]/div[2]/div[2]/div[1]')
+        if items[0]:
+            self.datadictionary.update({items[1][0]: items[1][1]})
+        time.sleep(4)
+
+    def store_data_in_file(self):
+        logger.info(write_mock_data(self.datadictionary))
+
+    def close_browser(self):
+        self.ob.disconnect()
 
     def do_activity(self):
         self.login()
         self.click_apply()
         self.get_mock_data()
         self.verify_and_store_data()
+        self.submit_form()
+        self.store_data_in_file()
+        self.close_browser()
 
 
 
@@ -186,10 +201,7 @@ class Admission:
 
 obj = Admission()
 obj.do_activity()
-# obj.login()
-# ob = SeleniumFactory(url='https://2020admission.giet.edu/admission/index.php?p=login', success_element='left-panel')
-# ob.connect()
-# print(obj.get_attribute_and_value(item=STATE))
+
 
 
 

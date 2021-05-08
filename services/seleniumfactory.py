@@ -34,6 +34,7 @@ class SeleniumFactory:
             self.driver.get(self.url)
             WebDriverWait(self.driver, login_page_load_wait_duration).until(EC.presence_of_element_located(
                 (By.CLASS_NAME, login_successful_div_element)))
+            self.driver.minimize_window()
         except TimeoutException:
             logger.exception("Unable to connect")
             sys.exit()
@@ -125,6 +126,20 @@ class SeleniumFactory:
                 return False
         except Exception as e:
             logger.exception(f"Exception as {e}")
+            return
+
+    def find_text_by_xpath(self, static_tag=None):
+        try:
+            data = tuple()
+            if static_tag is not None:
+                value = self.driver.find_element_by_xpath(static_tag).text.split(":")
+                data = (value[0], value[1])
+                return True, data
+            else:
+                logger.error("Insufficient Data")
+                return False, data
+        except Exception as e:
+            logger.exception(f"Exception as {e}")
             return False
 
     def search_element_by_css(self, search_key):
@@ -141,7 +156,7 @@ class SeleniumFactory:
         try:
             if main_tag == 'name':
                 if tag_value is not None:
-                    value = self.driver.find_element_by_name(tag_value)
+                    value = self.driver.find_element_by_name(tag_value).get_attribute('value')
                     status = True
                 else:
                     logger.error("Unable to search")
@@ -154,15 +169,12 @@ class SeleniumFactory:
                     logger.error("Unable to search")
                 return status, value
             else:
-                if tag_value is not None:
-                    options = ['M', 'F', 'O']
-                    for option in options:
-                        if self.driver.find_element_by_xpath(f".//input[@type='radio' and @value='{option}']").is_selected():
-                            value = option
-                            break
-                    status = True
-                else:
-                    logger.error("Unable to search")
+                options = ['M', 'F', 'O']
+                for option in options:
+                    if self.driver.find_element_by_xpath(f".//input[@type='radio' and @value='{option}']").is_selected():
+                        value = option
+                        break
+                status = True
                 return status, value
         except Exception as e:
             logger.exception(f"Exception while fetching values {e}")
