@@ -1,14 +1,19 @@
 import random
+import shelve
+import shutil
 import sys
 import logging
 import logging.config
 import os
 import json
+import tempfile
+from contextlib import contextmanager
+from utilties.constants import *
 from getindianname import male, female
 from ast import literal_eval
-from utilties.config import win_cred_file, linux_cred_file, email_issuers, mock_data_file, log_file_path
 
-logging.FileHandler(log_file_path, mode='a', encoding=None, delay=False,)
+from utilties.config import get_env
+
 logging.config.fileConfig('logging.conf')
 logger = logging.getLogger('helpers')
 
@@ -143,8 +148,9 @@ def update_dd(dd=None, key=None, value=None):
     return dd
 
 
-def write_mock_data(data_dictionary=None):
+def write_mock_data(data_dictionary=None, cached=None):
     try:
+        mock_data_file = cached['mock_data_file'] if cached is not None else get_env('mock_data_file')
         if not os.path.exists(mock_data_file):
             with open(mock_data_file, 'w') as writer:
                 writer.writelines(json.dumps(data_dictionary, indent=4))
@@ -154,3 +160,23 @@ def write_mock_data(data_dictionary=None):
         return "Successfully wrote the data dictionary file"
     except OSError as e:
         logger.exception(f"Error while writing data dictionary {e}")
+
+
+CACHE_STATE = {}
+@contextmanager
+def get_temporary_cache(writeback=True):
+    cache_dir = tempfile.mkdtemp(prefix='ga')
+    shelf_file_path = os.path.join(cache_dir, "cache.shelve")
+    shelf = shelve.open(shelf_file_path, writeback=writeback)
+    CACHE_STATE["cache"] = shelf
+    yield CACHE_STATE["cache"]
+    del CACHE_STATE["cache"]
+    shelf.close()
+    shutil.rmtree(cache_dir)
+
+
+def get_temp_repo_root_dir():
+    temp_root_path = os.path.expanduser(os.path.join("~", "tmp", "temp_data"))
+    if not os.path.exists(temp_root_path):
+        os.makedirs(temp_root_path)
+    return temp_root_path

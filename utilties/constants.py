@@ -38,3 +38,10 @@ JEE_APPEARED = '/html/body/div[1]/div/div[2]/div[2]/form/div[2]/fieldset/table[9
 STATE_ENTRANCE_APPEARED = '/html/body/div[1]/div/div[2]/div[2]/form/div[2]/fieldset/table[9]/tbody/tr[3]/td[2]/input[2]'
 BTECH_APPEARED = '/html/body/div[1]/div/div[2]/div[2]/form/div[2]/fieldset/table[9]/tbody/tr[4]/td[2]/input[2]'
 
+# Other constants
+email_issuers = ['gmail', 'yahoomail', 'outlook', 'rediffmail']
+login_successful_div_element = 'left-panel'
+login_failure_div_element = 'red-left'
+login_failure_msg = 'Invalid Email or Password!'
+login_page_load_wait_duration = 5
+post_login_req_wait = 10

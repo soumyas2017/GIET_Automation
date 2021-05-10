@@ -1,12 +1,6 @@
-from utilties.config import (
-    login_successful_div_element,
-    login_url,
-    login_page_load_wait_duration,
-    chrome_driver_path,
-    firefox_driver_path
-)
 from utilties.constants import *
 from utilties.helpers import *
+from utilties.config import *
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -23,11 +17,17 @@ logger = logging.getLogger('seleniumfactory')
 
 
 class SeleniumFactory:
-    def __init__(self):
-        if sys.platform == 'win32':
-            self.driver = webdriver.Chrome(executable_path=chrome_driver_path)
+    def __init__(self, cached):
+        if cached is not None:
+            exec_path = cached['chrome_driver_path']
+            login_url = cached['login_url']
         else:
-            self.driver = webdriver.Firefox(executable_path=firefox_driver_path)
+            exec_path = get_env('chrome_driver_path')
+            login_url = get_env('login_url')
+        if sys.platform == 'win32':
+            self.driver = webdriver.Chrome(executable_path=exec_path)
+        else:
+            self.driver = webdriver.Firefox(executable_path=exec_path)
         self.url = login_url
 
     def connect(self):
